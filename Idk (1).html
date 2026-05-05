@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Ôn Tập KTCK II Công Nghệ 11</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@600;700&family=STIX+Two+Text:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        :root { 
+            --primary: #2563eb; 
+            --success: #059669; 
+            --error: #dc2626; 
+            --bg: #f1f5f9; 
+            --text: #1a1a1a; /* Làm đậm màu chữ một chút để giống mực in */
+            --font-main: 'STIX Two Text', serif;
+            --font-heading: 'Crimson Pro', serif;
+        }
+
+        body { 
+            font-family: var(--font-main); 
+            background: var(--bg); 
+            color: var(--text); 
+            margin: 0; 
+            padding: 20px; 
+            line-height: 1.6; 
+            -webkit-font-smoothing: antialiased; /* Giúp font chữ thanh mảnh, sắc nét hơn */
+        }
+
+        .container { 
+            max-width: 850px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 40px; 
+            border-radius: 12px; /* Giảm độ bo góc một chút cho chuyên nghiệp hơn */
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+            border: 1px solid #e2e8f0;
+        }
+        
+        /* Header & Điểm số */
+        .header-flex { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 10px; 
+            font-family: var(--font-heading);
+        }
+        .score-live { 
+            background: #10b981; 
+            color: white; 
+            padding: 4px 12px; 
+            border-radius: 4px; 
+            font-weight: 700; 
+            font-size: 0.9rem; 
+        }
+        .progress-bar { height: 8px; background: #e2e8f0; border-radius: 4px; margin: 15px 0 30px; overflow: hidden; }
+        #progress-fill { height: 100%; background: linear-gradient(90deg, #1e293b, #2563eb); width: 0%; transition: 0.5s; }
+        
+        /* Câu hỏi & Đáp án */
+        .q-text { 
+            font-size: 1.35rem; /* Tăng nhẹ size font serif để dễ đọc */
+            font-weight: 700; 
+            margin-bottom: 25px; 
+            color: #000; 
+            white-space: pre-wrap; 
+        }
+        .opt-list { display: grid; gap: 12px; }
+        .opt-item { 
+            padding: 16px 20px; 
+            border: 1px solid #e2e8f0; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            background: #f8fafc; 
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .opt-item:hover { border-color: var(--primary); background: #eff6ff; }
+        
+        /* Đúng/Sai */
+        .tf-box { 
+            border: 1px solid #e2e8f0; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin-bottom: 10px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            font-size: 1.1rem;
+        }
+        .tf-btn-group { display: flex; gap: 8px; }
+        .tf-btn { 
+            padding: 8px 18px; 
+            border: 1px solid #cbd5e1; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            background: white; 
+            font-weight: 600; 
+            font-family: var(--font-main);
+        }
+        .selected-t { background: #dcfce7; border-color: #22c55e; color: #15803d; font-weight: 700; }
+        .selected-f { background: #fee2e2; border-color: #ef4444; color: #b91c1c; font-weight: 700; }
+        
+        /* Trạng thái */
+        .correct { background: #dcfce7 !important; color: #15803d !important; border-color: #22c55e !important; }
+        .wrong { background: #fee2e2 !important; color: #b91c1c !important; border-color: #ef4444 !important; }
+        .hidden { display: none !important; }
+        
+        .main-btn { 
+            width: 100%; padding: 16px; border: none; border-radius: 8px; background: #1e293b; 
+            color: white; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 25px; 
+            font-family: var(--font-main);
+        }
+        .menu-btn { background: var(--primary); margin-bottom: 15px; margin-top: 0; }
+        
+        /* Review Card */
+        .review-card { border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 20px; overflow: hidden; }
+        .review-header { background: #f8fafc; padding: 10px 15px; font-weight: 700; font-size: 0.85rem; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; }
+        .review-body { padding: 15px; font-size: 1.05rem; }
+        .ans-box { padding: 10px; border-radius: 6px; margin-top: 5px; font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="start-screen" style="text-align: center;">
+    <h1 style="color: var(--primary); margin-bottom: 30px;">Ôn Tập Công Nghệ 11</h1>
+    <p style="margin-bottom: 30px; color: #64748b;">Vui lòng chọn nội dung bạn muốn ôn tập:</p>
+    <button class="main-btn menu-btn" onclick="startQuiz('mc')">Trắc Nghiệm</button>
+    <button class="main-btn menu-btn" onclick="startQuiz('tf')">Đúng / Sai</button>
+    <button class="main-btn menu-btn" onclick="startQuiz('all')" style="background: #10b981;">Trắc Nghiệm + Đúng / Sai</button>
+</div>
+
+<div class="container hidden" id="quiz-screen">
+    <div class="header-flex">
+        <div>
+            <h2 id="part-name" style="color: var(--primary); margin: 0; font-size: 1rem; text-transform: uppercase;">PHẦN THI</h2>
+            <span id="score-live-display" class="score-live">Đúng: 0</span>
+        </div>
+        <span id="info" style="font-weight: 700; color: #64748b;">0 / 0</span>
+    </div>
+    <div class="progress-bar"><div id="progress-fill"></div></div>
+    
+    <div id="quiz-body"></div>
+    <button id="action-btn" class="main-btn hidden">Tiếp theo</button>
+</div>
+
+<script>
+    // Dữ liệu đã được chỉnh sửa theo yêu cầu: 
+    // - Giữ nguyên nội dung đầy đủ của các đáp án gộp.
+    // - Chọn đáp án đúng theo phần tô vàng trong tài liệu.
+    const rawMC = [
+        {q: "Hệ thống cơ khí động lực gồm những bộ phận nào?", options: ["Nguồn động lực, hệ thống truyền lực.", "Nguồn động lực, hệ thống truyền lực, máy công tác.", "Nguồn động lực, máy công tác.", "Máy công tác, hệ thống truyền lực."], a: "Nguồn động lực, hệ thống truyền lực, máy công tác."},
+        {q: "Nguồn động lực trong hệ thống cơ khí động lực có vai trò gì?", options: ["Cung cấp năng lượng cho hệ thống hoạt động.", "Truyền và biến đổi năng lượng từ nguồn động lực đến máy công tác.", "Đảm bảo cho hệ thống làm việc ở các môi trường, điều kiện khác nhau.", "Cung cấp năng lượng cho hệ thống hoạt động; Truyền và biến đổi năng lượng từ nguồn động lực đến máy công tác."], a: "Cung cấp năng lượng cho hệ thống hoạt động."},
+        {q: "Hệ thống truyền lực trong hệ thống cơ khí động lực có vai trò gì?", options: ["Cung cấp năng lượng cho hệ thống hoạt động.", "Truyền và biến đổi năng lượng từ nguồn động lực đến máy công tác.", "Đảm bảo cho hệ thống làm việc ở các môi trường, điều kiện khác nhau.", "Cả 3 đáp án còn lại."], a: "Truyền và biến đổi năng lượng từ nguồn động lực đến máy công tác."},
+        {q: "Máy công tác trong hệ thống cơ khí động lực có vai trò gì?", options: ["Cung cấp năng lượng cho hệ thống hoạt động.", "Truyền và biến đổi năng lượng từ nguồn động lực đến máy công tác.", "  Đảm bảo cho hệ thống làm việc ở các môi trường, điều kiện khác nhau.", "Truyền và biến đổi năng lượng từ nguồn động lực đến máy công tác; Đảm bảo cho hệ thống làm việc ở các môi trường, điều kiện khác nhau."], a: "  Đảm bảo cho hệ thống làm việc ở các môi trường, điều kiện khác nhau."},
+        {q: "Phương tiện giao thông vận tải chủ yếu trên đường bộ là", options: ["Xe máy", "Ô tô", "Xe quân sự", "Xe chữa cháy."], a: "Ô tô"},
+        {q: "Đặc điểm nào sau đây không có ở tàu thủy?", options: ["Có sức chuyên chở rất lớn.", "Thường sử dụng trong vận tải hàng hóa quốc tế.", "Tốc độ chuyển động rất nhanh.", "Cần đến hạ tầng cụm cảng lớn."], a: "Tốc độ chuyển động rất nhanh."},
+        {q: "Đâu là ngành nghề trong lĩnh vực cơ khí động lực?", options: ["Nghiên cứu thiết kế, phát triển sản phẩm cơ khí động lực.", "Sản xuất, lắp ráp sản phẩm cơ khí động lực.", "Bảo dưỡng, sửa chữa máy cơ khí động lực.", "Cả 3 đáp án còn lại."], a: "Cả 3 đáp án còn lại."},
+        {q: "Nghiên cứu thiết kế, phát triển sản phẩm cơ khí động lực là nhóm công việc nghiên cứu ứng dụng các kiến thức thuộc lĩnh vực nào?", options: ["Toán", "Khoa học", "Kĩ Thuật.", "Cả 3 đáp án còn lại."], a: "Cả 3 đáp án còn lại."},
+
+        {q: "Sản xuất, lắp ráp sản phẩm cơ khí động lực thực hiện công việc gì?", options: ["Chế tạo và lắp ráp các chi tiết hoặc cụm chi tiết thành các sản phẩm hoàn chỉnh, kiểm tra đánh giá chất lượng sản phẩm trước khi xuất xưởng.", "Bảo dưỡng, sửa chữa máy, thiết bị cơ khí động lực.", "Xây dựng các bản vẽ, tính toán, mô phỏng các sản phẩm máy móc, … thuộc lĩnh vực cơ khí động lực.", "Cả 3 đáp án còn lại."], a: "Chế tạo và lắp ráp các chi tiết hoặc cụm chi tiết thành các sản phẩm hoàn chỉnh, kiểm tra đánh giá chất lượng sản phẩm trước khi xuất xưởng."},
+        {q: "Người làm nghề nào phải có kiến thức, kinh nghiệm, kĩ năng vận hành cũng như khả năng phán đoán để phát hiện các lỗi, hỏng hóc của máy, thiết bị và đưa ra được các phương án khắc phục?", options: ["Sản xuất máy thiết bị cơ khí động lực.", "Thiết kế kĩ thuật cơ khí động lực.", "Lắp ráp máy, thiết bị cơ khí động lực.", "Bảo dưỡng, sửa chữa máy, thiết bị cơ khí động lực."], a: "Bảo dưỡng, sửa chữa máy, thiết bị cơ khí động lực."},
+        {q: "Quá trình chuyển hóa năng lượng trong động cơ đốt trong là?", options: ["Nhiệt năng → Điện năng → Cơ năng", "Nhiệt năng → Hóa năng → Cơ năng", "Hóa năng → Nhiệt năng → Cơ năng", "Hóa năng → Cơ năng → Nhiệt năng"], a: "Hóa năng → Nhiệt năng → Cơ năng"},
+        {q: "Khái niệm điểm chết dưới?", options: ["Là điểm chết mà tại đó pit-tông ở gần tâm trục khuỷu nhất.", "Là điểm chết mà tại đó pit-tông ở xa tâm trục khuỷu nhất.", "Là vị trí mà tại đó pit-tông đổi chiều chuyển động", "Không xác định được"], a: "Là điểm chết mà tại đó pit-tông ở gần tâm trục khuỷu nhất."},
+        {q: "Mối quan hệ giữa hành trình pit-tông và bán kính quay trục khuỷu là", options: ["S = R.", "S = 2R.", "R = 2S.", "S = 3R"], a: "S = 2R."},
+        {q: "Tính thể tích công tác của một xi lanh khi biết thể tích công tác của động cơ 4 xi lanh là 2,4 lít?", options: ["0,6 lít.", "6 lít.", "9,6 lít.", "6,4 lít"], a: "0,6 lít."},
+        {q: "Phân loại theo hành trình của pit-tông trong một chu trình làm việc, động cơ đốt trong được phân thành mấy loại?", options: ["Hai loại.", "Ba loại.", "Bốn loại.", "Nhiều loại."], a: "Hai loại."},
+        {q: "Động cơ xăng có tỉ số nén:", options: ["6 → 10.", "2 → 6.", "10 → 15.", "15 → 21."], a: "6 → 10."},
+        {q: "Khi động cơ hoạt động, pit-tông dịch chuyển một hành trình thì trục khuỷu quay mấy vòng?", options: ["Một vòng.", "Hai vòng.", "Nửa vòng.", "Bốn vòng."], a: "Nửa vòng."},
+        {q: "Trong một chu trình làm việc của động cơ 4 kì, trục cam quay mấy vòng?", options: ["Một vòng.", "Hai vòng.", "Nửa vòng.", "Bốn vòng."], a: "Một vòng."},
+        {q: "Trong kì nạp của động cơ xăng 4 kì:", options: ["Xupap nạp mở.", "Hòa khí được nạp vào xilanh.", "Xupap nạp mở; Hòa khí được nạp vào xilanh.", "Vòi phun, phun tơi nhiên liệu vào xi lanh."], a: "Xupap nạp mở; Hòa khí được nạp vào xilanh."},
+        {q: "Trong kì nén của động cơ xăng 4 kì:", options: ["Xupap nạp mở.", "Không khí trong xilanh bị nén.", "Xupap thải mở.", "Cả hai xupap đều đóng."], a: "Cả hai xupap đều đóng."},
+        {q: "Trong kì nạp của động cơ điêzen 4 kì:", options: ["Không khí được nạp vào xilanh.", "Hòa khí được nạp vào xilanh.", "Dầu điezen được nạp vào xi lanh.", "Vòi phun, phun tơi nhiên liệu vào xi lanh."], a: "Không khí được nạp vào xilanh."},
+        {q: "Trên thành xilanh của động cơ xăng 2 kì có mấy cửa khí?", options: ["Một.", "Hai.", "Ba.", "Bốn."], a: "Ba."},
+        {q: "Trong kì cháy – dãn nở của động cơ điêzen 4 kì:", options: ["Pit-tông từ ĐCD lên ĐCT.", "Xupap thải mở.", "Pit-tông được trục khuỷu dẫn động từ ĐCT xuống ĐCD.", "Pit-tông dẫn động trục khuỷu quay thông qua thanh truyền."], a: "Pit-tông dẫn động trục khuỷu quay thông qua thanh truyền."},
+        {q: "Trong một chu trình làm việc của động cơ xăng 2 kì, trục khuỷu quay một góc bao nhiêu độ?", options: ["90°.", "180°.", "360°.", "720°."], a: "360°."},
+        {q: "Trong kì 2 của động cơ xăng 2 kì, trong xilanh lần lượt diễn ra các quá trình:", options: ["Cháy giãn nở, lọt khí, quét khí và nạp hòa khí mới vào xi lanh.", "Thải tự do, lọt khí, quét khí và nạp hòa khí mới vào xi lanh.", "Quét khí và nạp hòa khí mới vào xi lanh, lọt khí, nén và cháy.", "Quét khí và nạp hòa khí mới vào xi lanh, lọt khí, nén và cháy, nạp hòa khí mới vào các te."], a: "Quét khí và nạp hòa khí mới vào xi lanh, lọt khí, nén và cháy, nạp hòa khí mới vào các te."},
+        {q: "Trong kì 1 của động cơ xăng 2 kì, trong xilanh lần lượt diễn ra các quá trình:", options: ["Cháy giãn nở, lọt khí, quét khí và nạp hòa khí mới vào xi lanh.", "Thải tự do, lọt khí, quét khí và nạp hòa khí mới vào xi lanh.", "Cháy giãn nở, thải tự do, nạp hòa khí mới vào các te.", "Cháy giãn nở, thải tự do, quét khí và nạp hòa khí mới vào xi lanh."], a: "Cháy giãn nở, thải tự do, quét khí và nạp hòa khí mới vào xi lanh."},
+        {q: "Trong động cơ xăng 2 kì, quá trình nạp hòa khí vào cacte được thực hiện ở kì nào?", options: ["Kì 1.", "Kì 2.", "Kì 3.", "Kì 4."], a: "Kì 2."},
+        {q: "Quá trình cháy dãn nở trong động cơ xăng 2 kì kết thúc khi nào?", options: ["Pit-tông bắt đầu đóng kín cửa thải.", "Pít-tông bắt đầu đóng kín cửa quét.", "Pít-tông bắt đầu mở cửa thải.", "Pít-tông bắt đầu mở cửa nạp."], a: "Pít-tông bắt đầu mở cửa thải."},
+        {q: "Trong một chu trình làm việc của động cơ đốt trong 4 kì, mỗi xupap nạp và xupap thải mở mấy lần?", options: ["1 lần.", "2 lần.", "4 lần.", "Mở liên tục."], a: "1 lần."},
+        {q: "Trong động cơ 2 kì chi tiết nào làm nhiệm vụ đóng mở các cửa nạp và cửa thải?", options: ["Xilanh.", "Nắp máy.", "Xupap.", "Pit-tông."], a: "Pit-tông."},
+        {q: "Phân loại theo nhiên liệu sử dụng, động cơ đốt trong được phân thành mấy loại?", options: ["Hai loại.", "Ba loại.", "Bốn loại.", "Nhiều loại."], a: "Ba loại."},
+        {q: "Thể tích không gian giới hạn bởi nắp máy, xilanh và đỉnh pit-tông khi pit-tông ở điểm chết trên là:", options: ["Thể tích xilanh.", "Thể tích toàn phần.", "Thể tích buồng cháy.", "Thể tích công tác."], a: "Thể tích buồng cháy."},
+        {q: "Thể tích không gian giới hạn bởi nắp máy, xilanh và đỉnh pit-tông khi pit-tông ở điểm chết dưới là:", options: ["Thể tích xilanh.", "Thể tích toàn phần.", "Thể tích buồng cháy.", "Thể tích công tác."], a: "Thể tích toàn phần."},
+        {q: "Thể tích không gian giới hạn bởi nắp máy, xilanh và đỉnh pit-tông là:", options: ["Thể tích xilanh.", "Thể tích toàn phần.", "Thể tích buồng cháy.", "Thể tích công tác."], a: "Thể tích xilanh."},
+        {q: "Xe máy Honda Wave 110cc đó là thể tích nào?", options: ["Thể tích xi lanh.", "Thể tích toàn phần.", "Thể tích buồng cháy.", "Thể tích công tác."], a: "Thể tích công tác."},
+        {q: "Quá trình quét thải khí trong động cơ xăng 2 kì kết thúc khi nào?", options: ["Pit-tông bắt đầu đóng kín cửa thải.", "Pit-tông bắt đầu đóng kín cửa quét.", "Pit-tông bắt đầu mở cửa thải.", "Pit-tông bắt đầu mở cửa nạp."], a: "Pit-tông bắt đầu đóng kín cửa quét."},
+        {q: "Trong một chu trình làm việc của động cơ điêzen 4 kì, trục khuỷu quay một góc bao nhiêu độ?", options: ["90°.", "180°.", "360°.", "720°."], a: "720°."},
+        {q: "Cuối kì nén của động cơ xăng 4 kì:", options: ["Bugi bật tia lửa điện châm cháy hòa khí.", "Vòi phun phun tơi nhiên liệu với áp suất cao vào buồng cháy.", "Xupap nạp mở, xupap thải đóng.", "Xupap nạp đóng, xupap thải mở."], a: "Bugi bật tia lửa điện châm cháy hòa khí."},
+        {q: "Cơ cấu trục khuỷu thanh truyền gồm mấy chi tiết chính?", options: ["Hai.", "Ba.", "Bốn.", "Năm."], a: "Bốn."},
+        {q: "Động cơ đốt trong làm mát bằng nước, bộ phận nào chứa áo nước làm mát?", options: ["Thân xilanh.", "Nắp xilanh.", "Cacte.", "Thân xilanh; Nắp xilanh."], a: "Thân xilanh; Nắp xilanh."},
+        {q: "Động cơ đốt trong làm mát bằng không khí, bộ phận nào có các cánh tản nhiệt làm mát?", options: ["Thân xilanh.", "Nắp xilanh.", "Cacte.", "Thân xilanh; Nắp xilanh."], a: "Thân xilanh; Nắp xilanh."},
+        {q: "Chi tiết làm nhiệm vụ nhận lực đẩy của khí cháy rồi truyền lực cho trục khuỷu quay để sinh công là:", options: ["Pit-tông.", "Thanh truyền.", "Xilanh.", "Trục cam."], a: "Pit-tông."},
+        {q: "Cấu tạo của pit-tông gồm mấy phần chính?", options: ["Hai.", "Ba.", "Bốn.", "Năm."], a: "Ba."},
+        {q: "Bộ phận nào trong nhóm pit-tông có lỗ ngang để lắp chốt pit-tông?", options: ["Đầu pit-tông.", "Đỉnh pit-tông.", "Thân pit-tông.", "Đầu nhỏ thanh truyền."], a: "Thân pit-tông."},
+        {q: "Thanh truyền là chi tiết:", options: ["Truyền lực giữa pit-tông và trục khuỷu.", "Dẫn động các cơ cấu và hệ thống của động cơ.", "Truyền lực giữa xilanh và pit-tông.", "Truyền lực giữa xilanh và trục khuỷu."], a: "Truyền lực giữa pit-tông và trục khuỷu."},
+        {q: "Đầu to của thanh truyền được lắp với chi tiết nào?", options: ["Chốt pit-tông.", "Cổ khuỷu.", "Chốt khuỷu.", "Đuôi trục khuỷu."], a: "Chốt khuỷu."},
+        {q: "Nhiệm vụ chính của trục khuỷu là:", options: ["Nhận lực từ thanh truyền để tạo mômen quay kéo máy công tác.", "Tạo ra không gian làm việc.", "Truyền lực giữa pit-tông và trục khuỷu.", "Dẫn động pit-tông chuyển động tịnh tiến trong xi lanh."], a: "Nhận lực từ thanh truyền để tạo mômen quay kéo máy công tác."},
+        {q: "Cấu tạo trục khuỷu của động cơ hai xilanh gồm mấy cổ khuỷu?", options: ["Hai.", "Ba.", "Bốn.", "Năm."], a: "Ba."},
+        {q: "Cấu tạo trục khuỷu của động cơ ba xilanh gồm mấy chốt khuỷu?", options: ["Một.", "Ba.", "Sáu.", "Chín."], a: "Ba."},
+        {q: "Cấu tạo trục khuỷu của động cơ một xilanh gồm mấy má khuỷu?", options: ["Hai.", "Một.", "Bốn.", "Sáu."], a: "Hai."},
+        {q: "Cơ cấu phân phối khí dùng xupap treo, xupap được lắp vào bộ phận nào trên động cơ?", options: ["Nắp máy.", "Thân máy.", "Cacte.", "Xilanh."], a: "Nắp máy."},
+        {q: "Cơ cấu phân phối khí dùng xupap đặt, xupap được lắp vào bộ phận nào trên động cơ?", options: ["Nắp máy.", "Thân máy.", "Cacte.", "Xilanh."], a: "Thân máy."},
+        {q: "Trong cơ cấu phân phối khí dùng xupap treo, xupap ở trang thái mở cửa nạp hoặc cửa thải khi:", options: ["Cam tác động vào con đội.", "Lò xo xupap dãn ra.", "Vấu cam tác động vào con đội.", "Vấu cam quay qua con đội."], a: "Vấu cam tác động vào con đội."},
+        {q: "Trong cơ cấu phân phối khí dùng xupap treo, xupap ở trạng thái đóng cửa nạp hoặc cửa thải khi:", options: ["Lò xo xupap bị nén.", "Lò xo xupap dãn ra.", "Vấu cam tác động vào con đội.", "Lò xo xupap bị nén; Vấu cam tác động vào con đội."], a: "Lò xo xupap dãn ra."},
+        {q: "Trong động cơ 4 kì đường kính bánh răng của trục cam so với đường kính bánh răng của trục khuỷu?", options: ["Gấp 2 lần.", "Gấp 4 lần.", "Bằng nhau.", "Bằng 1/2 lần."], a: "Gấp 2 lần."},
+        {q: "Trong động cơ 4 kì số vòng quay của trục khuỷu so với số vòng quay của trục cam?", options: ["Gấp 2 lần.", "Gấp 4 lần.", "Bằng nhau.", "Bằng 1/2 lần."], a: "Gấp 2 lần."},
+	{q: "Hệ thống bôi trơn có nhiệm vụ:", options: ["Bôi trơn các bề mặt làm việc của các chi tiết để giảm ma sát và nhiệt độ giữa các chi tiết.", "Bôi trơn và làm mát các bề mặt làm việc của các chi tiết để giảm ma sát và nhiệt độ giữa các chi tiết.", "Bôi trơn, làm mát, tẩy rửa, bao kín các bề mặt ma sát của các chi tiết.", "Đưa dầu bôi trơn đến các bề làm việc của các chi tiết để giảm ma sát và nhiệt độ giữa các chi tiết."], a: "D. Đưa dầu bôi trơn đến các bề làm việc của các chi tiết để giảm ma sát và nhiệt độ giữa các chi tiết."},
+	{q: "Phân loại theo phương pháp bôi trơn, hệ thống bôi trơn được phân thành mấy loại?", options: ["Hai loại.", "Ba loại.", "Bốn loại.", "Nhiều loại."], a: "Ba loại."},
+	{q: "Trong hệ thống bôi trơn cưỡng bức, nếu áp suất dầu trên đường ống vượt quá giới hạn cho phép thì:", options: ["Van khống chế lượng lưu lượng dầu qua két làm mát mở.", "Van an toàn bơm dầu mở.", "Van an toàn bơm dầu đóng.", "Két làm mát dầu đóng."], a: "Van an toàn bơm dầu mở."},
+	{q: "Trong hệ thống bôi trơn cưỡng bức, nếu nhiệt độ dầu cao quá nhiệt độ cho phép thì:", options: ["Van khống chế lượng lưu lượng dầu qua két làm mát mở.", "Van khống chế lượng lưu lượng dầu qua két làm mát đóng.", "Van an toàn bơm dầu mở.", "Đường dầu chính đóng lại."], a: "Van khống chế lượng lưu lượng dầu qua két làm mát đóng."},
+	{q: "Trong hệ thống bôi trơn cưỡng bức, chi tiết nào là quan trọng nhất?", options: ["Van an toàn bơm dầu.", "Van khống chế lưu lượng dầu qua két làm mát.", "Két làm mát dầu.", "Bơm dầu."], a: "Bơm dầu."},
+	{q: "Trong hệ thống bôi cưỡng bức, bơm dầu được chi tiết nào dẫn động?", options: ["Pit-tông.", "Thanh truyền.", "Trục khuỷu.", "Trục cam."], a: "Trục khuỷu."},
+	{q: "Trong hệ thống làm mát bằng nước được chia ra làm mấy loại?", options: ["Ba.", "Hai.", "Bốn.", "Nhiều loại."], a: "Ba."},
+	{q: "Căn cứ vào môi chất làm mát, hệ thống làm mát được phân làm mấy loại?", options: ["Ba.", "Hai.", "Bốn.", "Nhiều loại."], a: "Hai."},
+	{q: "Trong hệ thống làm mát bằng nước tuần hoàn cưỡng bức, bơm nước được chi tiết nào dẫn động?", options: ["Pit-tông.", "Thanh truyền.", "Trục khuỷu.", "Trục cam."], a: "Trục khuỳu."},
+	{q: "Trong hệ thống làm mát bằng nước tuần hoàn cưỡng bức, khi nhiệt độ của nước trong áo nước còn thấp hơn giới hạn định trước thì van hằng nhiệt:", options: ["Đóng cửa thông với đường nước số 8.", "Mở cửa thông với đường nước về két nước.", "Đóng cửa thông với đường nước về két, mở hoàn toàn cửa thông với đường nước số 8.", "Mở cửa thông với đường nước về két, đóng hoàn toàn cửa thông với đường nước số 8."], a: "Đóng cửa thông với đường nước về két, mở hoàn toàn cửa thông với đường nước số 8."},
+	{q: "Trong hệ thống làm mát bằng nước tuần hoàn cưỡng bức, khi nhiệt độ của nước trong áo nước vượt quá giới hạn định trước thì van hằng nhiệt:", options: ["Mở cửa thông với đường nước số 8.", "Đóng cửa thông với đường nước về két nước.", "Đóng cửa thông với đường nước về két, mở hoàn toàn cửa thông với đường nước số 8.", "Mở cửa thông với đường nước về két, đóng hoàn toàn cửa thông với đường nước số 8."], a: "Mở cửa thông với đường nước về két, đóng hoàn toàn cửa thông với đường nước số 8."},
+	{q: "Trong hệ thống làm mát bằng nước tuần hoàn cưỡng bức, khi nhiệt độ nước đạt đến giới hạn (từ 80°C đến 95°C) thì van hằng nhiệt:", options: ["Mở cả hai đường thông với két nước và đường ống số 8.", "Đóng cả hai đường thông với két nước và đường ống số 8.", "Đóng cửa thông với đường nước về két, mở hoàn toàn cửa thông với đường nước số 8.", "Mở cửa thông với đường nước về két, đóng hoàn toàn cửa thông với đường nước số 8."], a: "Mở cả hai đường thông với két nước và đường ống số 8."},
+	{q: "Hệ thống nhiên liệu động cơ xăng có nhiệm vụ?", options: ["Cung cấp nhiên liệu và tạo hòa khí (hỗn hợp không khí và nhiên liệu) phù hợp với các chế độ làm việc của động cơ.", "Dự trữ, cung cấp nhiên liệu và tạo hòa khí (hỗn hợp không khí và nhiên liệu) phù hợp với các chế độ làm việc của động cơ.", "Dự trữ, cung cấp không khí và dầu diesel phù hợp với các chế độ làm việc của động cơ.", "Cung cấp không khí và dầu diesel phù hợp với các chế độ làm việc của động cơ."], a: "Dự trữ, cung cấp nhiên liệu và tạo hòa khí (hỗn hợp không khí và nhiên liệu) phù hợp với các chế độ làm việc của động cơ."},
+	{q: "Hệ thống nhiên liệu động cơ diesel có nhiệm vụ?", options: ["Cung cấp nhiên liệu và tạo hòa khí (hỗn hợp không khí và nhiên liệu) phù hợp với các chế độ làm việc của động cơ.", "Dự trữ, cung cấp nhiên liệu và tạo hòa khí (hỗn hợp không khí và nhiên liệu) phù hợp với các chế độ làm việc của động cơ.", "Dự trữ, cung cấp không khí và dầu diesel phù hợp với các chế độ làm việc của động cơ.", "Cung cấp không khí và dầu diesel phù hợp với các chế độ làm việc của động cơ."], a: "Dự trữ, cung cấp không khí và dầu diesel phù hợp với các chế độ làm việc của động cơ."},
+	{q: "Sơ đồ khối hệ thống nhiên liệu dùng vòi phun (hệ thống phun xăng) gồm mấy khối?", options: ["Bảy khối.", "Tám khối.", "Chín khối.", "Mười khối."], a: "Mười khối."},
+	{q: "Sơ đồ khối hệ thống nhiên liệu động cơ diesel gồm mấy khối?", options: ["Bảy khối.", "Tám khối.", "Chín khối.", "Sáu khối."], a: "Tám khối."},
+	{q: "Trong hệ thống nhiên liệu động cơ diesel, chi tiết nào là quan trọng nhất?", options: ["Bơm chuyển nhiên liệu.", "Bơm cao áp.", "Vòi phun.", "Bầu lọc tinh."], a: "Bơm cao áp."},
+	{q: "Hệ thống khởi động có nhiệm vụ:", options: ["Làm quay bánh đà của động cơ đến số vòng quay nhất định để động cơ có thể tự nổ máy được.", "Làm quay trục khuỷu của động cơ để động cơ có thể tự nổ máy được.", "Làm quay bánh đà của động cơ để động cơ có thể tự nổ máy được.", "Làm quay trục khuỷu của động cơ đến số vòng quay nhất định để động cơ có thể tự nổ máy được."], a: "Làm quay trục khuỷu của động cơ đến số vòng quay nhất định để động cơ có thể tự nổ máy được."},
+	{q: "Trong hệ thống khởi động bằng động cơ điện, khi khóa khởi động (8) được đóng:", options: ["Lõi thép của rơ le điện (10) bị hút sang trái.", "Lõi thép của rơ le điện (10) bị hút sang phải.", "Khớp bánh răng khởi động (12) được đẩy sang trái.", "Tiếp điểm K-K mở ra ngắt dòng điện vào động cơ điện."], a: "Lõi thép của rơ le điện (10) bị hút sang trái."},
+	{q: "Trong hệ thống khởi động bằng động cơ điện, khi khóa khởi động (8) được tắt:", options: ["Lõi thép của rơ le điện (10) bị hút sang trái.", "Vành răng của khớp bánh răng khởi động (12) ăn khớp với vành răng bánh đà.", "Khớp bánh răng khởi động (12) được đẩy sang trái.", "Tiếp điểm K-K đóng lại đưa dòng điện vào động cơ điện."], a: "Khớp bánh răng khởi động (12) được đẩy sang trái."},
+	{q: "Trong hệ thống khởi động bằng động cơ điện, khi khóa khởi động (8) được đóng:", options: ["Lõi thép của rơ le điện (10) bị hút sang phải.", "Vành răng của khớp bánh răng khởi động (12) ăn khớp với vành răng bánh đà.", "Khớp bánh răng khởi động (12) được đẩy sang trái.", "Tiếp điểm K-K mở ra ngắt dòng điện vào động cơ điện."], a: "Vành răng của khớp bánh răng khởi động (12) ăn khớp với vành răng bánh đà."},
+	{q: "Trong hệ thống khởi động bằng động cơ điện, khi khóa khởi động (8) được đóng:", options: ["Lõi thép của rơ le điện (10) bị hút sang phải.", "Vành răng của khớp bánh răng khởi động (12) tách với vành răng bánh đà.", "Khớp bánh răng khởi động (12) được đẩy sang trái.", "Tiếp điểm K-K đóng lại đưa dòng điện vào động cơ điện."], a: "Tiếp điểm K-K đóng lại đưa dòng điện vào động cơ điện."},
+	{q: "Trong hệ thống khởi động bằng động cơ điện, khi khóa khởi động (8) được tắt:", options: ["Lõi thép của rơ le điện (10) bị hút sang trái.", "Vành răng của khớp bánh răng khởi động (12) tách với vành răng bánh đà.", "Khớp bánh răng khởi động (12) được đẩy sang phải.", "Tiếp điểm K-K đóng lại đưa dòng điện vào động cơ điện."], a: "Vành răng của khớp bánh răng khởi động (12) tách với vành răng bánh đà."},
+	{q: "Trong hệ thống khởi động bằng động cơ điện, khi khóa khởi động (8) được tắt:", options: ["Lõi thép của rơ le điện (10) bị hút sang trái.", "Vành răng của khớp bánh răng khởi động (12) ăn khớp với vành răng bánh đà.", "Khớp bánh răng khởi động (12) được đẩy sang phải.", "Tiếp điểm K-K mở ra ngắt dòng điện vào động cơ điện."], a: "Tiếp điểm K-K mở ra ngắt dòng điện vào động cơ điện."},
+	{q: "Hệ thống đánh lửa có nhiệm vụ:", options: ["Tạo ra tia lửa điện để đốt cháy hòa khí trong xi lanh động cơ xăng đúng thời điểm.", "Tạo ra dòng điện năng lượng cao để đốt cháy hòa khí trong xi lanh động cơ xăng đúng thời điểm.", "Tạo ra tia lửa điện năng lượng cao để đốt cháy hòa khí trong xi lanh động cơ xăng đúng thời điểm.", "Tạo ra tia lửa điện năng lượng cao để đốt cháy xăng trong xi lanh động cơ xăng đúng thời điểm."], a: "Tạo ra tia lửa điện năng lượng cao để đốt cháy hòa khí trong xi lanh động cơ xăng đúng thời điểm."},
+	{q: "Hệ thống đánh lửa điện tử được phân thành mấy loại?", options: ["Hai loại.", "Ba loại.", "Bốn loại.", "Nhiều loại."], a: "Hai loại."},
+	{q: "Phần tử nào có chức năng dập tắt hoặc giảm đáng kể tia lửa điện trên cặp tiếp điểm trong hệ thống đánh lửa trên động cơ xăng?", options: ["Điện trở.", "Bộ tạo xung.", "Lò xo.", "Tụ điện."], a: "Tụ điện."},
+	{q: "Phần tử nào có chức năng đóng mở cặp tiếp điểm trong hệ thống đánh lửa trên động cơ xăng?", options: ["Bộ chia điện.", "Bộ tạo xung.", "Lò xo.", "Tụ điện."], a: "Lò xo."},
+	{q: "Phần tử nào có chức năng khắc phục được hiện tượng sụp áp trên ắc quy khi khởi động động cơ làm chất lượng đánh lửa kém trong hệ thống đánh lửa trên động cơ xăng?", options: ["Điện trở.", "Bộ tạo xung.", "Khóa hỗ trợ khởi động.", "Tụ điện."], a: "Khóa hỗ trợ khởi động."},
+	{q: "Hệ thống xử lí khí thải có nhiệm vụ:", options: ["Xử lí, giảm bớt nồng độ các chất độc hại trong khí thải của động cơ trước khi thải ra môi trường.", "Giảm bớt nồng độ các chất độc hại trong khí thải của động cơ trước khi thải ra môi trường trong quá trình động cơ làm việc.", "Xử lí, giảm bớt nồng độ các chất độc hại trong khí thải của động cơ trước khi thải ra môi trường trong quá trình động cơ làm việc.", "Xử lí nồng độ các chất độc hại trong khí thải của động cơ trước khi thải ra môi trường trong quá trình động cơ làm việc."], a: "Xử lí, giảm bớt nồng độ các chất độc hại trong khí thải của động cơ trước khi thải ra môi trường trong quá trình động cơ làm việc."},
+	{q: "Bộ lọc DOC trong hệ thống xử lí khí thải trên động cơ Diesel có chức năng gì?", options: ["Tuần hoàn khí thải.", "Đốt cháy muội than, oxi hóa NO trên đường xả của động cơ.", "Loại bỏ thành phần PM (muội than, hạt mài,...) trong khí thải.", "Làm mát khí luân hồi trước khi nạp vào xi lanh."], a: "Đốt cháy muội than, oxi hóa NO trên đường xả của động cơ."},
+	{q: "Bộ phận nào của ô tô có chức năng dùng để điều khiển chuyển hướng chuyển động của ô tô?", options: ["Hệ thống truyền lực.", "Hệ thống lái.", "Hệ thống treo.", "Hệ thống phanh."], a: "Hệ thống lái."},
+	{q: "Ô tô tải thùng cố định thuộc nhóm nào sau đây?", options: ["Nhóm ô tô chở người.", "Nhóm ô tô chở hàng hóa.", "Nhóm ô tô chuyên dụng.", "Cả 3 đáp án trên."], a: "Nhóm ô tô chở hàng hóa."},
+	{q: "Bộ phận có chức năng tạo ra nguồn mô men chủ động giúp ô tô chuyển động là", options: ["Hệ thống truyền lực.", "Động cơ.", "Hệ thống điện.", "Hệ thống lái."], a: "Động cơ."},
+	{q: "Bộ phận có chức năng truyền và biến đổi mô men chủ động đến các bánh xe chủ động để bánh xe quay và ô tô chuyển động là", options: ["Hệ thống truyền lực.", "Động cơ.", "Bánh xe và hệ thống treo.", "Hệ thống lái."], a: "Hệ thống truyền lực."},
+	{q: "Bộ phận giúp ô tô hoạt động an toàn, hiệu quả và tiện nghi là", options: ["Hệ thống điện, điện tử.", "Hệ thống lái.", "Bánh xe và hệ thống treo.", "Hệ thống phanh."], a: "Hệ thống điện, điện tử."},
+	{q: "Trên xe ô tô chức năng chống bó cứng phanh được viết tắt là", options: ["ACT.", "ABS.", "ACS.", "ECT."], a: "ABS."},
+	{q: "Trên xe ô tô hộp số tự động sử dụng công nghệ điều khiển điện tử hiện đại để điều khiển hộp số được viết tắt là", options: ["ACT.", "EBS.", "TCS.", "ECT."], a: "ECT."},
+	{q: "Cấu tạo chung của hệ thống truyền lực trên ô tô gồm mấy bộ phận chính?", options: ["Bốn.", "Năm.", "Sáu.", "Bảy."], a: "Năm."},
+	{q: "Tác động vào bộ phận nào của hệ thống truyền lực trên ô tô để ngắt mô men chủ động truyền tới bánh xe?", options: ["Li hợp.", "Hộp số.", "Trục các đăng.", "Li hợp hoặc hộp số."], a: "Li hợp hoặc hộp số."},
+	{q: "Bộ phận đầu tiên của hệ thống truyền lực nằm giữa động cơ và hộp số là", options: ["Bộ vi sai.", "Truyền lực chính.", "Li hợp.", "Đĩa ma sát."], a: "Li hợp."},
+	{q: "Trong li hợp chi tiết nào bị mài mòn và mỏng dần theo thời gian, ảnh hưởng đến khả năng truyền mô men của li hợp?", options: ["Lò xo ép.", "Đĩa ép.", "Đĩa ma sát.", "Vòng bi tì."], a: "Đĩa ma sát."},
+	{q: "Bộ phận thay đổi tỉ số truyền của hệ thống truyền lực để thay đổi mô men chủ động cũng như vận tốc của bánh xe chủ động cho phù hợp với điều kiện hoạt động khác nhau của xe là", options: ["Hộp số.", "Truyền lực chính.", "Bộ vi sai.", "Bán trục."], a: "Hộp số."},
+	{q: "Bộ phận nối hoặc ngắt (lâu dài) dòng truyền mô men chủ động từ động cơ đến các bánh xe chủ động để xe có thể chuyển động hoặc dừng lâu dài là", options: ["Hộp số.", "Truyền lực chính.", "Bộ vi sai.", "Li hợp."], a: "Hộp số."},
+	{q: "Bộ phận có nhiệm vụ phân chia mô men chủ động đến các bánh xe chủ động, đồng thời cho phép các bánh xe chủ động có thể quay được với các vận tốc khác nhau là", options: ["Bộ vi sai.", "Hộp số.", "Trục các đăng.", "Các bán trục."], a: "Bộ vi sai."},
+	{q: "Lớp giúp tăng khả năng chịu lực của lốp xe ô tô là", options: ["Lớp sợi mành.", "Lớp hoa lốp.", "Lớp thành bên.", "Lớp lót trong."], a: "Lớp sợi mành."},
+	{q: "Lớp giúp lốp xe ô tô lắp được vào vành xe là", options: ["Lớp sợi mành.", "Lớp hoa lốp.", "Lớp thành bên.", "Tanh lốp."], a: "Tanh lốp."},
+	{q: "Lớp giúp tăng khả năng bám của bánh xe ô tô với mặt đường là", options: ["Lớp sợi mành.", "Lớp hoa lốp.", "Lớp thành bên.", "Lớp lót bảo vệ."], a: "Lớp hoa lốp."},
+	{q: "Hệ thống treo được phân làm mấy loại?", options: ["Hai loại.", "Ba loại.", "Bốn loại.", "Nhiều loại."], a: "Hai loại."},
+	{q: "Hệ thống treo của ô tô bao gồm mấy bộ phận chính?", options: ["Hai.", "Ba.", "Bốn.", "Sáu."], a: "Ba."},
+	{q: "Bộ phận đàn hồi của hệ thống treo thường gặp trên ô tô con là", options: ["Lò xo xoắn.", "Nhíp lá.", "Bóng khí nén.", "Cả A, B, C."], a: "Lò xo xoắn."}
+    ];
+
+    const rawTF = [
+        {title: "Câu 1. Trong quá trình ôn bài kiểm tra một nhóm học sinh có những nhận định về động cơ đốt trong như sau:", items: [
+            {t: "a) Trong một chu trình công tác của động cơ 4 kì, kì nổ là kì sinh công, kì nạp, kì nén, kì xả là các kì tiêu thụ công.", a: true},
+            {t: "b) Với động cơ có tỉ số nén bằng 20, đây là động cơ xăng.", a: false},
+            {t: "c) Ở động cơ diesel, hỗn hợp nhiên liệu và không khí bị nén với nhiệt độ, áp suất cao sẽ tự cháy, không cần bugi.", a: true},
+            {t: "d) Dòng xe nổi tiếng suzuki sport hay còn gọi là “Su xì po” là dòng xe máy 2 kì sử dụng nhiên liệu xăng pha nhớt để hoạt động.", a: true}
+        ]},
+        {title: "Câu 2. Sau đây là các nhận định về thân máy và các cơ cấu của động cơ đốt trong", items: [
+            {t: "a) Các rãnh xecmăng được bố trí ở phần thân của piston.", a: false},
+            {t: "b) Thân xilanh của động cơ xe Future Neo FI có cánh tản nhiệt để làm mát động cơ.", a: true},
+            {t: "c) Thân máy là chi tiết di động, nắp máy là chi tiết cố định.", a: false},
+            {t: "d) Trục khuỷu không được bố trí trên nắp máy.", a: true}
+        ]},
+        {title: "Câu 3. Nhận định về các đặc điểm của hệ thống bôi trơn và hệ thống làm mát", items: [
+            {t: "a) Ngoài tác dụng bôi trơn, dầu còn có công dụng làm mát, bao kín, tẩy rửa và chống gỉ.", a: true},
+            {t: "b) Hệ thống bôi trơn có các bộ phận : Bơm dầu, cacte dầu, quạt gió, van hằng nhiệt.", a: false},
+            {t: "c) Thân máy của động cơ làm mát bằng không khí có cấu tạo áo nước làm mát.", a: false},
+            {t: "d) Bơm nước là bộ phận tạo ra sự tuần hoàn của nước trong hệ thống làm mát bằng nước loại tuần hoàn cưỡng bức.", a: true}
+        ]},
+        {title: "Câu 4. Nhận định về các đặc điểm của hệ thống bôi trơn cưỡng bức và hệ thống làm mát", items: [
+            {t: "a) Bơm dầu có nhiệm vụ hút dầu từ cacte đến các đường dầu chính để đi bôi trơn cho các bề mặt ma sát.", a: true},
+            {t: "b) Khi động cơ hoạt động, van hằng nhiệt đóng đường nước về két nước, mở cửa thông với đường nước số 8 nối tắt về bơm khi nhiệt độ nước thấp hơn giới hạn cho phép.", a: true},
+            {t: "c) Cánh tản nhiệt thuộc hệ thống làm mát bằng nước.", a: false},
+            {t: "d) Két làm mát dầu có nhiệm vụ hút dầu từ cacte lên các bề mặt ma sát.", a: false}
+        ]},
+	{title: "Câu 5. Nhận định về các đặc điểm của hệ thống nhiên liệu ở động cơ Diesel", items: [
+    {t: "a) Bơm chuyển nhiên liệu hút nhiên liệu từ bình nhiên liệu đưa tới bơm cao áp.", a: true},
+    {t: "b) Bộ chế hòa khí thuộc hệ thống nhiên liệu động cơ Diesel.", a: false},
+    {t: "c) Hệ thống nhiên liệu động cơ Diesel góp phần tiết kiệm nhiên liệu và làm giảm ô nhiễm môi trường.", a: true},
+    {t: "d) Ở hệ thống nhiên liệu động cơ Diesel không cần phải có bơm cao áp để đưa nhiên liệu đến vòi phun vì nhiên liệu đã có áp suất cao sẵn.", a: false}
+]},
+{title: "Câu 6. Nhận định về cơ cấu trong động cơ đốt trong và động cơ trên ô tô", items: [
+    {t: "a) Ô tô thường được làm mát bằng nước.", a: true},
+    {t: "b) Nhiên liệu sử dụng cho tất cả các loại ô tô là xăng.", a: false},
+    {t: "c) Ô tô là động cơ có 1 xilanh.", a: false},
+    {t: "d) Khói qua ống thải ra môi trường có màu xanh sẽ gây ô nhiễm môi trường ít hơn là loại khói có màu đen.", a: false}
+]},
+{title: "Câu 7. Nhận định về các hệ thống trong động cơ đốt trong", items: [
+    {t: "a) Hệ thống làm mát bằng không khí có các cánh tản nhiệt để làm mát.", a: true},
+    {t: "b) Bôi trơn qua nhiên liệu được dùng cho động cơ xăng 2 kì.", a: true},
+    {t: "c) Hệ thống nhiên liệu động cơ xăng có bộ phận quan trọng là bơm cao áp.", a: false},
+    {t: "d) Động cơ Diesel luôn cần bugi để bật tia lửa điện.", a: false}
+]},
+        {
+            title: "Câu 8. Hình bên dưới là sơ đồ khối của hệ thống bôi trơn cưỡng bức:",
+            image: "so-do-boi-tron.png", // <--- File ảnh bạn vừa lưu từ Word
+            items: [
+                {t: "a) Chi tiết số 1 là van an toàn nhằm làm giảm áp suất của dầu khi áp suất dầu trong đường ống trước bơm dầu vượt quá áp suất cho phép.", a: false},
+                {t: "b) Đường đi của dầu trong trường hợp làm việc bình thường là: Các te &rarr; bơm dầu &rarr; bầu lọc dầu &rarr; két làm mát dầu &rarr; bề mặt ma sát.", a: false},
+                {t: "c) Quan sát sơ đồ khối cho thấy: Hệ thống bôi trơn cưỡng bức là hệ thống khép kín nên các thiết bị sử dụng hệ thống này không cần phài thay dầu thường xuyên.", a: false},
+                {t: "d) Hệ thống bôi trơn này chỉ được dùng trên các phương tiện giao thông có công suất nhỏ.", a: false}
+            ]
+        },
+	{
+            title: "Câu 9. Hình bên dưới là cấu tạo của bộ chế hòa khí đơn giản:",
+            image: "Picture2.png", // <--- File ảnh bạn vừa lưu từ Word
+            items: [
+                {t: "a) Hòa khí được tạo ra ở họng khuếch tán.", a: true},
+                {t: "b) Bướm gió luôn mở để không khí vào nhiều nhất.", a: true},
+                {t: "c) Xe máy sử dụng bộ chế hòa khí sẽ có giá thành cao hơn sử dụng hệ thống phun xăng điện tử.", a: false},
+                {t: "d) Với dòng xe máy sử dụng bộ chế hòa khí, vặn tay ga là điều chỉnh độ mở của bướm ga.", a: true}
+            ]
+        },
+	{title: "Câu 10. Học sinh thảo luận nhóm về hệ thống truyền lực trên ô tô", items: [
+    {t: "a) Hệ thống truyền lực có chức năng truyền và biến đổi mô men chủ động đến các bánh xe chủ động để bánh xe quay và xe chuyển động.", a: true},
+    {t: "b) Li hợp có nhiệm vụ nối hoặc ngắt (lâu dài) dòng truyền mô men chủ động từ động cơ đến các bánh xe chủ động để xe có thể chuyển động hoặc dừng lâu dài trong khi động cơ vẫn hoạt động.", a: false},
+    {t: "c) Trên ô tô điện hộp số có cấu tạo rất đơn giản và không có li hợp đi kèm.", a: true},
+    {t: "d) Chi tiết quyết định tỉ số của truyền lực chính là bánh răng chủ động truyền lực chính ăn khớp với bánh răng bánh trục.", a: false}
+]},
+
+{title: "Câu 11. Nhóm học sinh thảo luận về sử dụng và bảo dưỡng hệ thống truyền lực", items: [
+    {t: "a) Khi vận hành li hợp, cần chú ý mở li hợp từ từ. Ngược lại, khi đóng li hợp cần thực hiện nhanh chóng và dứt khoát.", a: false},
+    {t: "b) Đối với hộp số thường, trước khi khởi động động cơ cần kiểm tra vị trí cần chuyển số để đảm bảo chắc chắn rằng hộp số đang ở vị trí trung gian.", a: true},
+    {t: "c) Đối với hộp số tự động, khi dừng xe cần đạp phanh để xe dừng hẳn sau đó dịch chuyển cần chuyển số về vị trí đỗ xe (N).", a: false},
+    {t: "d) Đối với hộp số thường khi xe di chuyển trên những đoạn đường xấu hoặc lên dốc, cần chuyển cần chuyền số về tay số thấp.", a: true}
+]},
+
+{title: "Câu 12. Nhóm học sinh thảo luận về bánh xe và hệ thống treo", items: [
+    {t: "a) Bánh xe là bộ phận của ô tô tiếp xúc với mặt đường để đỡ toàn bộ trọng lượng của xe và tiếp nhận các phản lực của mặt đường tác dụng lên xe.", a: true},
+    {t: "b) Khi xe chuyển động qua mặt đường không bằng phẳng, nhờ có bộ phận giảm chấn liên kết giữa bánh xe và thân xe giúp giảm thiểu được lực va đập (xóc) truyền lên thân xe.", a: false},
+    {t: "c) Bộ phận đàn hồi là bóng khí nén được sử dụng ngày càng phổ biến trên ô tô khách, vì hệ số độ cứng của bộ phận đàn hồi có thể thay đổi được bằng cách tự động điều chỉnh áp suất khí nén trong bộ phận đàn hồi.", a: true},
+    {t: "d) Để các lốp mòn đồng đều, lốp thường được đảo vị trí cho nhau sau mỗi hành trình khoảng 10.000 Km.", a: true}
+]},
+
+{title: "Câu 13. Nhóm học sinh thảo luận về hệ thống lái", items: [
+    {t: "a) Dẫn động lái là bộ phận tạo ra tỉ số truyền chính của hệ thống lái. Dẫn động lái gồm dẫn động lái trước cơ cấu lái và dẫn động lái sau cơ cấu lái.", a: false},
+    {t: "b) Hệ thống trợ lực lái có tác dụng giảm nhẹ lực cần tác dụng lên vành lái để điều khiển hướng chuyển động của xe.", a: true},
+    {t: "c) Cần quay vành lái theo chiều sang phải để xe tiến sang phải, lùi xe sang trái cần quay vành lái theo hướng sang phải.", a: false},
+    {t: "d) Công việc kiểm tra, bảo dưỡng hệ thống lái theo định kì không cần kiểm tra mức dầu trợ lực lái, vì khi hệ thống hoạt động mức dầu trợ lực không bị hao phí.", a: false}
+]},
+        
+    ];
+
+    // --- BIẾN HỆ THỐNG (GIỮ NGUYÊN TỪ WEB CŨ) ---
+    let currentIdx = 0;
+    let score = 0;
+    let shuffledQuiz = [];
+    let tfState = [];
+    let wrongAnswers = [];
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // --- TÍNH NĂNG MỚI: CHỌN CHẾ ĐỘ ---
+    function startQuiz(mode) {
+        currentIdx = 0;
+        score = 0;
+        wrongAnswers = [];
+        
+        let mcPart = [];
+        let tfPart = [];
+
+        if (mode === 'mc' || mode === 'all') {
+            mcPart = shuffle([...rawMC]).map(q => ({...q, type: 'MC', options: shuffle([...q.options])}));
+        }
+        if (mode === 'tf' || mode === 'all') {
+            tfPart = shuffle([...rawTF]).map(q => ({...q, type: 'TF'}));
+        }
+
+        shuffledQuiz = [...mcPart, ...tfPart];
+
+        if (shuffledQuiz.length === 0) {
+            alert("Không có câu hỏi cho chế độ này!");
+            return;
+        }
+
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('quiz-screen').classList.remove('hidden');
+        render();
+    }
+
+    function render() {
+        const body = document.getElementById('quiz-body');
+        const btn = document.getElementById('action-btn');
+        const q = shuffledQuiz[currentIdx];
+        
+        // Cập nhật điểm và thông tin
+        document.getElementById('score-live-display').innerText = `Đúng: ${score}`;
+        document.getElementById('info').innerText = `${currentIdx + 1} / ${shuffledQuiz.length}`;
+        document.getElementById('progress-fill').style.width = `${((currentIdx) / shuffledQuiz.length) * 100}%`;
+        document.getElementById('part-name').innerText = q.type === 'MC' ? "PHẦN I: TRẮC NGHIỆM" : "PHẦN II: ĐÚNG / SAI";
+        
+        body.innerHTML = '';
+        btn.classList.add('hidden');
+
+        if (q.type === 'MC') {
+            body.innerHTML = `<div class="q-text">${q.q}</div><div class="opt-list" id="opt-list"></div>`;
+            q.options.forEach((opt, i) => {
+                const div = document.createElement('div');
+                div.className = 'opt-item';
+                div.innerHTML = `<strong>${String.fromCharCode(65+i)}.</strong> ${opt}`;
+                div.onclick = () => handleMC(div, opt, q.a);
+                document.getElementById('opt-list').appendChild(div);
+            });
+        } else {
+            tfState = new Array(4).fill(null);
+            let img = q.image ? `<img src="${q.image}" class="q-image" style="max-width:100%; margin-bottom:15px;">` : "";
+            body.innerHTML = `${img}<div class="q-text">${q.title}</div><div id="tf-wrap"></div>`;
+            q.items.forEach((item, i) => {
+                const box = document.createElement('div');
+                box.className = 'tf-box';
+                box.innerHTML = `<div style="flex:1; padding-right:10px;">${item.t}</div>
+                <div class="tf-btn-group">
+                    <button class="tf-btn" onclick="handleTF(${i}, true, this)">ĐÚNG</button>
+                    <button class="tf-btn" onclick="handleTF(${i}, false, this)">SAI</button>
+                </div>`;
+                document.getElementById('tf-wrap').appendChild(box);
+            });
+            btn.innerText = "Xác nhận";
+            btn.classList.remove('hidden');
+            btn.disabled = true;
+            btn.onclick = processTF;
+        }
+    }
+
+    function handleMC(el, sel, cor) {
+        document.querySelectorAll('.opt-item').forEach(i => i.style.pointerEvents = 'none');
+        if (sel === cor) {
+            el.classList.add('correct');
+            score++;
+            document.getElementById('score-live-display').innerText = `Đúng: ${score}`;
+        } else {
+            el.classList.add('wrong');
+            document.querySelectorAll('.opt-item').forEach(i => {
+                if(i.innerText.includes(cor)) i.classList.add('correct');
+            });
+            wrongAnswers.push({ q: shuffledQuiz[currentIdx].q, mine: sel, correct: cor, type: 'MC' });
+        }
+        const btn = document.getElementById('action-btn');
+        btn.innerText = "Tiếp theo";
+        btn.classList.remove('hidden');
+        btn.disabled = false;
+        btn.onclick = next;
+    }
+
+    function handleTF(idx, val, btn) {
+        tfState[idx] = val;
+        btn.parentElement.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('selected-t', 'selected-f'));
+        btn.classList.add(val ? 'selected-t' : 'selected-f');
+        document.getElementById('action-btn').disabled = tfState.includes(null);
+    }
+
+    function processTF() {
+        const q = shuffledQuiz[currentIdx];
+        const boxes = document.querySelectorAll('.tf-box');
+        let faults = [];
+        let allOk = true;
+
+        q.items.forEach((item, i) => {
+            const btns = boxes[i].querySelectorAll('.tf-btn');
+            btns.forEach(b => b.style.pointerEvents = 'none');
+            if (item.a) btns[0].classList.add('correct'); else btns[1].classList.add('correct');
+            if (tfState[i] !== item.a) {
+                allOk = false;
+                if(tfState[i]) btns[0].classList.add('wrong'); else btns[1].classList.add('wrong');
+                faults.push({ t: item.t, mine: tfState[i], cor: item.a });
+            }
+        });
+
+        if (allOk) {
+            score += 2;
+            document.getElementById('score-live-display').innerText = `Đúng: ${score}`;
+        } else {
+            wrongAnswers.push({ q: q.title, faults, type: 'TF' });
+        }
+
+        const btn = document.getElementById('action-btn');
+        btn.innerText = "Tiếp theo";
+        btn.onclick = next;
+    }
+
+    function next() {
+        currentIdx++;
+        if (currentIdx < shuffledQuiz.length) render();
+        else showFinal();
+    }
+
+    function showFinal() {
+        // Tính điểm tối đa dựa trên số câu thực tế đã nạp
+        let maxMC = shuffledQuiz.filter(q => q.type === 'MC').length;
+        let maxTF = shuffledQuiz.filter(q => q.type === 'TF').length * 2;
+        const max = maxMC + maxTF;
+
+        let listHtml = wrongAnswers.length > 0 ? `<h3 style="color:var(--error); margin-top:40px;">Danh sách câu làm sai:</h3>` : `<h3 style="color:var(--success)">Tuyệt vời! Bạn không sai câu nào.</h3>`;
+        
+        wrongAnswers.forEach((item) => {
+            listHtml += `
+            <div class="review-card">
+                <div class="review-header"><span>${item.type === 'MC' ? 'TRẮC NGHIỆM' : 'ĐÚNG / SAI'}</span></div>
+                <div class="review-body">
+                    <div style="font-weight:700; margin-bottom:10px;">${item.q}</div>
+                    ${item.type === 'MC' ? `
+                        <div class="ans-box" style="background:#fee2e2; color:#991b1b;">✖ Bạn chọn: ${item.mine}</div>
+                        <div class="ans-box" style="background:#dcfce7; color:#065f46;">✔ Đáp án đúng: ${item.correct}</div>
+                    ` : `
+                        ${item.faults.map(f => `
+                            <div style="border-top: 1px solid #eee; padding-top:10px; margin-top:10px;">
+                                <div style="font-size:0.9rem;">${f.t}</div>
+                                <div style="font-size:0.85rem; margin-top:5px;">
+                                    <span style="color:var(--error)">✖ Chọn: ${f.mine?'Đúng':'Sai'}</span> | 
+                                    <span style="color:var(--success)">✔ Đáp án: ${f.cor?'Đúng':'Sai'}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    `}
+                </div>
+            </div>`;
+        });
+
+        document.getElementById('quiz-screen').innerHTML = `
+            <div style="text-align:center;">
+                <h2 style="color:var(--primary); margin:0;">KẾT QUẢ CUỐI CÙNG</h2>
+                <div style="font-size:4rem; font-weight:900; margin:20px 0;">${score} <small style="font-size:1.5rem; color:#64748b;">/ ${max}</small></div>
+                <div style="text-align:left;">${listHtml}</div>
+                <button class="main-btn" onclick="location.reload()">Làm lại bài mới</button>
+            </div>
+        `;
+    }
+</script>
+</body>
+</html>
